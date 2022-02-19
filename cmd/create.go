@@ -17,7 +17,24 @@ var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a new melody.",
 	Long:  "Generates a new series of midi outputs and writes to a specified file.",
-	Run:   func(cmd *cobra.Command, args []string) {},
+	Run: func(cmd *cobra.Command, args []string) {
+		// Create flags struct & set defaults
+		f := flagDefaults()
+
+		outputFolder, _ := cmd.Flags().GetString("output-folder")
+		if outputFolder != "" {
+			f.OutputFolder = outputFolder
+		}
+
+		makeMidi(f)
+	},
+}
+
+func flagDefaults() flags {
+	f := flags{}
+	f.OutputFolder = "midi"
+
+	return f
 }
 
 func init() {
@@ -32,7 +49,11 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// createCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	makeMidi()
+	createCmd.PersistentFlags().String("output-folder", "", "Folder to output to.")
+}
+
+type flags struct {
+	OutputFolder string
 }
 
 type midiModel struct {
@@ -44,9 +65,11 @@ type midiModels struct {
 	midiData []midiModel
 }
 
-func makeMidi() {
-	dir := "midi"
+func makeMidi(f flags) {
+	dir := f.OutputFolder
 	files := []string{"a", "b", "c", "d", "e"}
+
+	fmt.Printf("Writing to folder: '%s'.\n", dir)
 
 	for _, file := range files {
 
@@ -54,7 +77,6 @@ func makeMidi() {
 		f := filepath.Join(dir, filename)
 
 		err := writer.WriteSMF(f, 2, func(wr *writer.SMF) error {
-
 			wr.SetChannel(1) // sets the channel for the next messages
 
 			noteNumber := random(4, 15)
