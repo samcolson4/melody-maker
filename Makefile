@@ -1,4 +1,4 @@
-buildTest:
+buildAndRun:
 	go build .
-	./melody-maker create blah
+	./melody-maker create
 	rm ./melody-maker
