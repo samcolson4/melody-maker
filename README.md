@@ -3,7 +3,7 @@ Generate fragments of midi data to help inspire melodies.
 
 Built using the excellent [gomidi](https://github.com/gomidi/midi) package.
 
-# Usage
+## Usage
 `make buildRunDelete` is a helper used during development to create a binary with the latest local changes, generate output and then delete the binary without the manual steps.
 
 When more features have been added, a binary will be provided as part of a release.
@@ -19,7 +19,7 @@ Written file 'd.mid': [C4 G#4 D#4 C3 D4 G#1 G#4 G4 G1 A4]
 Written file 'e.mid': [C#6 C#3 B5 B0 C#6 F2 C3 C1 C1 C4]
 ```
 
-### To do
+## To do
 - [X] Build initial random midi output
 
 Flags:
