@@ -31,8 +31,11 @@ var createCmd = &cobra.Command{
 		}
 
 		highNoteMidi, err := cmd.Flags().GetInt("high-note-midi")
-		if highNoteMidi != 0 && err == nil {
-			f.HighNoteMidi = highNoteMidi
+		f.HighNoteMidi = highNoteMidi
+
+		twoOctaveLimit, err := cmd.Flags().GetBool("two-octave-limit")
+		if err == nil {
+			f.TwoOctaveLimit = twoOctaveLimit
 		}
 
 		makeMidi(f)
@@ -42,15 +45,18 @@ var createCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(createCmd)
 
+	// Flags
 	createCmd.PersistentFlags().String("output-folder", "midi", "Folder to output to.")
 	createCmd.PersistentFlags().Int("low-note-midi", 21, "The lowest note of the output, in midi format.")
 	createCmd.PersistentFlags().Int("high-note-midi", 108, "The highest note of the output, in midi format.")
+	createCmd.PersistentFlags().Bool("two-octave-limit", false, "Use with low-note-midi to have a two note melody from a starting point. Overwrites `--high-note-midi`.")
 }
 
 type flags struct {
-	OutputFolder string
-	LowNoteMidi  int
-	HighNoteMidi int
+	OutputFolder   string
+	LowNoteMidi    int
+	HighNoteMidi   int
+	TwoOctaveLimit bool
 }
 
 type midiModel struct {
@@ -63,6 +69,7 @@ type midiModels struct {
 }
 
 func makeMidi(f flags) {
+	f = setFlagValues(f)
 	dir := f.OutputFolder
 	files := []string{"a", "b", "c", "d", "e"}
 
@@ -131,4 +138,12 @@ func midiToNote(midiIn []int) []string {
 	}
 
 	return notes
+}
+
+func setFlagValues(f flags) flags {
+	if f.TwoOctaveLimit == true {
+		f.HighNoteMidi = f.LowNoteMidi + int(24)
+	}
+
+	return f
 }
