@@ -2,13 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"math/rand"
 	"path/filepath"
-	"time"
 
-	"github.com/go-audio/midi"
 	"github.com/spf13/cobra"
-	"gitlab.com/gomidi/midi/reader"
 	"gitlab.com/gomidi/midi/writer"
 )
 
@@ -56,6 +52,8 @@ func init() {
 	createCmd.PersistentFlags().Int("high-note-midi", 108, "The highest note of the output, in midi format.")
 	createCmd.PersistentFlags().Bool("two-octave-limit", false, "Use with low-note-midi to have a two note melody from a starting point. Overwrites `--high-note-midi`.")
 	createCmd.PersistentFlags().Int("file-number", 6, "The number of files to generate. Max 23.")
+	// TODO Set channel
+	// TODO # notes in sequence
 }
 
 type flags struct {
@@ -66,22 +64,13 @@ type flags struct {
 	FileNumber     int
 }
 
-type midiModel struct {
-	Note     uint32
-	Velocity uint32
-}
-
-type midiModels struct {
-	midiData []midiModel
-}
-
 var fileNames = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "y", "x", "z"}
 
 func makeMidi(f flags) {
 	f = setFlagValues(f)
 	files := fileNames[0:f.FileNumber]
-	dir := f.OutputFolder
 
+	dir := f.OutputFolder
 	fmt.Printf("Writing to folder: '%s'.\n", dir)
 
 	for _, file := range files {
@@ -110,49 +99,17 @@ func makeMidi(f flags) {
 				noteValues = append(noteValues, int(midi.Note))
 			}
 
-			stringNotes := midiToNote(noteValues)
+			stringNotes := midisToNotes(noteValues)
+			fmt.Printf("%s: %s\n", filename, stringNotes)
 
-			fmt.Printf("Written file '%s': %s\n", filename, stringNotes)
 			writer.EndOfTrack(wr)
+
 			return nil
 		})
 
 		if err != nil {
-			fmt.Printf("could not write SMF file %v\n", f)
+			fmt.Printf("Could not write SMF file %v\n", f)
 			return
 		}
 	}
-}
-
-type printer struct{}
-
-func (pr printer) noteOn(p *reader.Position, channel, key, vel uint8) {
-	fmt.Printf("Track: %v Pos: %v NoteOn (ch %v: key %v vel: %v)\n", p.Track, p.AbsoluteTicks, channel, key, vel)
-}
-
-func (pr printer) noteOff(p *reader.Position, channel, key, vel uint8) {
-	fmt.Printf("Track: %v Pos: %v NoteOff (ch %v: key %v)\n", p.Track, p.AbsoluteTicks, channel, key)
-}
-
-func random(min, max int) int {
-	rand.Seed(time.Now().UnixNano())
-	return rand.Intn(max-min+1) + min
-}
-
-func midiToNote(midiIn []int) []string {
-	var notes []string
-
-	for _, key := range midiIn {
-		notes = append(notes, midi.NoteToName(key))
-	}
-
-	return notes
-}
-
-func setFlagValues(f flags) flags {
-	if f.TwoOctaveLimit == true {
-		f.HighNoteMidi = f.LowNoteMidi + int(24)
-	}
-
-	return f
 }
