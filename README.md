@@ -23,6 +23,7 @@ Written file 'e.mid': [C#6 C#3 B5 B0 C#6 F2 C3 C1 C1 C4]
 - [X] Build initial random midi output
 
 Flags:
+- [X] Output folder
 - [ ] Velocity range
 - [ ] Octave range
 
