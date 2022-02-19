@@ -8,11 +8,19 @@ import (
 	"gitlab.com/gomidi/midi/writer"
 )
 
+type flags struct {
+	OutputFolder   string
+	LowNoteMidi    int
+	HighNoteMidi   int
+	TwoOctaveLimit bool
+	FileNumber     int
+}
+
 // createCmd represents the create command
 var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a new melody.",
-	Long:  "Generates a new series of midi outputs and writes to a specified file.",
+	Long:  "Generates a series of midi outputs and writes them to a file.",
 	Run: func(cmd *cobra.Command, args []string) {
 		var f flags
 
@@ -43,6 +51,8 @@ var createCmd = &cobra.Command{
 	},
 }
 
+var fileNames = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "y", "x", "z"}
+
 func init() {
 	rootCmd.AddCommand(createCmd)
 
@@ -55,16 +65,6 @@ func init() {
 	// TODO Set channel
 	// TODO # notes in sequence
 }
-
-type flags struct {
-	OutputFolder   string
-	LowNoteMidi    int
-	HighNoteMidi   int
-	TwoOctaveLimit bool
-	FileNumber     int
-}
-
-var fileNames = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "y", "x", "z"}
 
 func makeMidi(f flags) {
 	f = setFlagValues(f)
