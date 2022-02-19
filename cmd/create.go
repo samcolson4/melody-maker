@@ -46,41 +46,47 @@ type midiModels struct {
 
 func makeMidi() {
 	dir := "midi"
-	f := filepath.Join(dir, "new.mid")
+	files := []string{"a", "b", "c", "d", "e"}
 
-	err := writer.WriteSMF(f, 2, func(wr *writer.SMF) error {
+	for _, file := range files {
 
-		wr.SetChannel(1) // sets the channel for the next messages
+		filename := fmt.Sprintf("%s.mid", file)
+		f := filepath.Join(dir, filename)
 
-		noteNumber := random(4, 15)
-		var d midiModels
-		var noteValues []int
-		sum := 0
-		for i := 1; i < noteNumber; i++ {
-			sum += i
-			d.midiData = append(d.midiData, midiModel{Note: uint32(random(35, 100)),
-				Velocity: uint32(random(40, 100)),
-			})
+		err := writer.WriteSMF(f, 2, func(wr *writer.SMF) error {
+
+			wr.SetChannel(1) // sets the channel for the next messages
+
+			noteNumber := random(4, 15)
+			var d midiModels
+			var noteValues []int
+			sum := 0
+			for i := 1; i < noteNumber; i++ {
+				sum += i
+				d.midiData = append(d.midiData, midiModel{Note: uint32(random(35, 100)),
+					Velocity: uint32(random(40, 100)),
+				})
+			}
+
+			for _, midi := range d.midiData {
+				writer.NoteOn(wr, uint8(midi.Note), uint8(midi.Velocity))
+				wr.SetDelta(uint32(random(300, 1500)))
+				writer.NoteOff(wr, uint8(midi.Note))
+
+				noteValues = append(noteValues, int(midi.Note))
+			}
+
+			stringNotes := midiToNote(noteValues)
+
+			fmt.Printf("Written file '%s': %s\n", filename, stringNotes)
+			writer.EndOfTrack(wr)
+			return nil
+		})
+
+		if err != nil {
+			fmt.Printf("could not write SMF file %v\n", f)
+			return
 		}
-
-		for _, midi := range d.midiData {
-			writer.NoteOn(wr, uint8(midi.Note), uint8(midi.Velocity))
-			wr.SetDelta(uint32(random(300, 1500)))
-			writer.NoteOff(wr, uint8(midi.Note))
-
-			noteValues = append(noteValues, int(midi.Note))
-		}
-
-		stringNotes := midiToNote(noteValues)
-
-		fmt.Printf("Written: %s\n", stringNotes)
-		writer.EndOfTrack(wr)
-		return nil
-	})
-
-	if err != nil {
-		fmt.Printf("could not write SMF file %v\n", f)
-		return
 	}
 }
 
