@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"math/rand"
 	"path/filepath"
+	"time"
 
 	"github.com/spf13/cobra"
 	"gitlab.com/gomidi/midi/reader"
@@ -31,34 +33,44 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// createCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	makeMidi()
+}
+
+type midiModel struct {
+	Note     uint32
+	Velocity uint32
+}
+
+type midiModels struct {
+	midiData []midiModel
 }
 
 func makeMidi() {
-	dir := "./midi"
-	f := filepath.Join(dir, "smf-test.mid")
+	dir := "midi"
+	f := filepath.Join(dir, "new.mid")
 
 	err := writer.WriteSMF(f, 2, func(wr *writer.SMF) error {
 
-		wr.SetChannel(11) // sets the channel for the next messages
-		writer.NoteOn(wr, 60, 100)
-		wr.SetDelta(300)
-		writer.NoteOff(wr, 120)
+		wr.SetChannel(1) // sets the channel for the next messages
 
-		writer.NoteOn(wr, 100, 100)
-		wr.SetDelta(300)
-		writer.NoteOff(wr, 120)
+		noteNumber := random(4, 15)
+		var d midiModels
 
-		// wr.SetDelta(240)
-		// writer.NoteOn(wr, 125, 50)
-		// wr.SetDelta(20)
-		// writer.NoteOff(wr, 125)
-		// writer.EndOfTrack(wr)
+		sum := 0
+		for i := 1; i < noteNumber; i++ {
+			sum += i
+			d.midiData = append(d.midiData, midiModel{Note: uint32(random(35, 100)),
+				Velocity: uint32(random(40, 100)),
+			})
+		}
 
-		// wr.SetChannel(2)
-		// writer.NoteOn(wr, 120, 50)
-		// wr.SetDelta(60)
-		// writer.NoteOff(wr, 120)
-		// writer.EndOfTrack(wr)
+		for _, midi := range d.midiData {
+			writer.NoteOn(wr, uint8(midi.Note), uint8(midi.Velocity))
+			wr.SetDelta(uint32(random(300, 900)))
+			writer.NoteOff(wr, uint8(midi.Note))
+		}
+
+		writer.EndOfTrack(wr)
 		return nil
 	})
 
@@ -76,4 +88,9 @@ func (pr printer) noteOn(p *reader.Position, channel, key, vel uint8) {
 
 func (pr printer) noteOff(p *reader.Position, channel, key, vel uint8) {
 	fmt.Printf("Track: %v Pos: %v NoteOff (ch %v: key %v)\n", p.Track, p.AbsoluteTicks, channel, key)
+}
+
+func random(min, max int) int {
+	rand.Seed(time.Now().UnixNano())
+	return rand.Intn(max-min+1) + min
 }

@@ -1,4 +1,4 @@
 buildTest:
 	go build .
-	./melody-maker create ./midi
+	./melody-maker create blah
 	rm ./melody-maker
