@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/go-audio/midi"
 	"github.com/spf13/cobra"
 	"gitlab.com/gomidi/midi/reader"
 	"gitlab.com/gomidi/midi/writer"
@@ -16,9 +17,7 @@ var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a new melody.",
 	Long:  "Generates a new series of midi outputs and writes to a specified file.",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Generating melody...")
-	},
+	Run:   func(cmd *cobra.Command, args []string) {},
 }
 
 func init() {
@@ -55,7 +54,7 @@ func makeMidi() {
 
 		noteNumber := random(4, 15)
 		var d midiModels
-
+		var noteValues []int
 		sum := 0
 		for i := 1; i < noteNumber; i++ {
 			sum += i
@@ -66,10 +65,15 @@ func makeMidi() {
 
 		for _, midi := range d.midiData {
 			writer.NoteOn(wr, uint8(midi.Note), uint8(midi.Velocity))
-			wr.SetDelta(uint32(random(300, 900)))
+			wr.SetDelta(uint32(random(300, 1500)))
 			writer.NoteOff(wr, uint8(midi.Note))
+
+			noteValues = append(noteValues, int(midi.Note))
 		}
 
+		stringNotes := midiToNote(noteValues)
+
+		fmt.Printf("Written: %s\n", stringNotes)
 		writer.EndOfTrack(wr)
 		return nil
 	})
@@ -93,4 +97,14 @@ func (pr printer) noteOff(p *reader.Position, channel, key, vel uint8) {
 func random(min, max int) int {
 	rand.Seed(time.Now().UnixNano())
 	return rand.Intn(max-min+1) + min
+}
+
+func midiToNote(midiIn []int) []string {
+	var notes []string
+
+	for _, key := range midiIn {
+		notes = append(notes, midi.NoteToName(key))
+	}
+
+	return notes
 }
