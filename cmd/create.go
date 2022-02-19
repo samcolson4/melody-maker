@@ -18,42 +18,39 @@ var createCmd = &cobra.Command{
 	Short: "Create a new melody.",
 	Long:  "Generates a new series of midi outputs and writes to a specified file.",
 	Run: func(cmd *cobra.Command, args []string) {
-		// Create flags struct & set defaults
-		f := flagDefaults()
+		var f flags
 
 		outputFolder, _ := cmd.Flags().GetString("output-folder")
 		if outputFolder != "" {
 			f.OutputFolder = outputFolder
 		}
 
+		lowNoteMidi, err := cmd.Flags().GetInt("low-note-midi")
+		if lowNoteMidi != 0 && err == nil {
+			f.LowNoteMidi = lowNoteMidi
+		}
+
+		highNoteMidi, err := cmd.Flags().GetInt("high-note-midi")
+		if highNoteMidi != 0 && err == nil {
+			f.HighNoteMidi = highNoteMidi
+		}
+
 		makeMidi(f)
 	},
-}
-
-func flagDefaults() flags {
-	f := flags{}
-	f.OutputFolder = "midi"
-
-	return f
 }
 
 func init() {
 	rootCmd.AddCommand(createCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// createCmd.Flags().String("folder", "", "Output folder for the midi.")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// createCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	createCmd.PersistentFlags().String("output-folder", "", "Folder to output to.")
+	createCmd.PersistentFlags().String("output-folder", "midi", "Folder to output to.")
+	createCmd.PersistentFlags().Int("low-note-midi", 21, "The lowest note of the output, in midi format.")
+	createCmd.PersistentFlags().Int("high-note-midi", 108, "The highest note of the output, in midi format.")
 }
 
 type flags struct {
 	OutputFolder string
+	LowNoteMidi  int
+	HighNoteMidi int
 }
 
 type midiModel struct {
@@ -72,20 +69,19 @@ func makeMidi(f flags) {
 	fmt.Printf("Writing to folder: '%s'.\n", dir)
 
 	for _, file := range files {
-
 		filename := fmt.Sprintf("%s.mid", file)
-		f := filepath.Join(dir, filename)
+		outputPath := filepath.Join(dir, filename)
 
-		err := writer.WriteSMF(f, 2, func(wr *writer.SMF) error {
+		err := writer.WriteSMF(outputPath, 2, func(wr *writer.SMF) error {
 			wr.SetChannel(1) // sets the channel for the next messages
 
-			noteNumber := random(4, 15)
+			noteNumber := random(3, 15)
 			var d midiModels
 			var noteValues []int
 			sum := 0
 			for i := 1; i < noteNumber; i++ {
 				sum += i
-				d.midiData = append(d.midiData, midiModel{Note: uint32(random(35, 100)),
+				d.midiData = append(d.midiData, midiModel{Note: uint32(random(f.LowNoteMidi, f.HighNoteMidi)),
 					Velocity: uint32(random(40, 100)),
 				})
 			}

@@ -24,8 +24,8 @@ Written file 'e.mid': [C#6 C#3 B5 B0 C#6 F2 C3 C1 C1 C4]
 
 Flags:
 - [X] Output folder
+- [X] Octave range
 - [ ] Velocity range
-- [ ] Octave range
 
 Keys & scales:
 - [ ] Add key selection (so users can generate a melody to go with an existing chord sequence)
