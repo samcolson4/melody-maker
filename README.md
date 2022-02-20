@@ -1,12 +1,12 @@
 # melody-maker
 Generate fragments of midi data to help inspire melodies.
 
-Built using the excellent [gomidi](https://github.com/gomidi/midi) package.
+Built using the excellent [gomidi](https://github.com/gomidi/midi) and [go-audio/midi](https://github.com/go-audio/midi) packages.
 
 ## Usage
-`make buildRunDelete` is a helper used during development to create a binary with the latest local changes, generate output and then delete the binary without the manual steps.
+When more features have been added, a binary will be provided as part of a release. For now, building locally (`make build`) then examining the help options is the best approach.
 
-When more features have been added, a binary will be provided as part of a release.
+`make buildRunDelete` is a helper used during development to create a binary with the latest local changes, generate output and then delete the binary without the manual steps.
 
 ### Example output
 ```
@@ -21,6 +21,8 @@ Written file 'e.mid': [C#6 C#3 B5 B0 C#6 F2 C3 C1 C1 C4]
 
 ## To do
 - [X] Build initial random midi output
+- [ ] Expand available scales (minor).
+- [ ] Add `save` command to move specified files to a different folder, avoiding overwriting.
 
 Flags:
 - [X] Output folder
@@ -29,9 +31,13 @@ Flags:
 - [ ] Velocity range
 
 Keys & scales:
-- [ ] Add key selection (so users can generate a melody to go with an existing chord sequence)
-- [ ] Add scale selection
+- [X] Add key selection (so users can generate a melody to go with an existing chord sequence)
+- [X] Add scale selection
 - [ ] `--random` flag, to allow non-scales etc
+
+Error reporting:
+- [ ] When entering an invalid key
+- [ ] When entering an invalid scale
 
 Tests:
 - [ ] Add some...
