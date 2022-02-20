@@ -50,3 +50,15 @@ func setFlagValues(f flags) flags {
 
 	return f
 }
+
+func removeDuplicateInt(intSlice []int32) []int32 {
+	allKeys := make(map[int32]bool)
+	list := []int32{}
+	for _, item := range intSlice {
+		if _, value := allKeys[item]; !value {
+			allKeys[item] = true
+			list = append(list, item)
+		}
+	}
+	return list
+}
