@@ -15,6 +15,7 @@ type flags struct {
 	TwoOctaveLimit bool
 	FileNumber     int
 	Key            string
+	Scale          string
 }
 
 // createCmd represents the create command
@@ -53,6 +54,11 @@ var createCmd = &cobra.Command{
 			f.Key = key
 		}
 
+		scale, _ := cmd.Flags().GetString("scale")
+		if err == nil {
+			f.Scale = scale
+		}
+
 		makeMidi(f)
 	},
 }
@@ -69,6 +75,7 @@ func init() {
 	createCmd.PersistentFlags().Bool("two-octave-limit", false, "Use with low-note-midi to have a two note melody from a starting point. Overwrites `--high-note-midi`.")
 	createCmd.PersistentFlags().Int("file-number", 6, "The number of files to generate. Max 23.")
 	createCmd.PersistentFlags().String("key", "C", "The key of the melody.")
+	createCmd.PersistentFlags().String("scale", "major", "The scale to use when generating a melody.")
 	// TODO Set channel
 	// TODO # notes in sequence
 }
@@ -133,8 +140,12 @@ func findAllowedNotes(f flags) []int32 {
 	var allowedNotes []int32
 	var scale []string
 
-	// TODO replace with f.Scale
-	scale = majorScale
+	if f.Scale == "Major" {
+		scale = majorScale
+	} else {
+		scale = majorScale
+	}
+
 	rootNote := f.Key
 	var rootNoteMidi int
 
@@ -167,7 +178,7 @@ func findAllowedNotes(f flags) []int32 {
 }
 
 var noteNames = []string{"A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"}
-var majorScale = []string{"W", "W", "H", "W", "W", "W", "H"}
+var majorScale = []string{"W", "W", "W", "H", "W", "W", "W", "H"}
 
 func generateNote(f flags, allowedNotes []int32) int {
 	var noteIsAllowed bool
