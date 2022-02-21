@@ -45,7 +45,7 @@ func midisToNotes(midiIn []int) []string {
 }
 
 func setFlagValues(f flags) flags {
-	if f.TwoOctaveLimit == true {
+	if f.TwoOctaveLimit {
 		f.HighNoteMidi = f.LowNoteMidi + int(24)
 	}
 
