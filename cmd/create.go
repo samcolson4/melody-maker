@@ -89,7 +89,7 @@ func makeMidi(f flags) {
 
 	allowedNotes := findAllowedNotes(f)
 
-	// Write to each file
+	// Write each file
 	for _, file := range files {
 		filename := fmt.Sprintf("%s.mid", file)
 		outputPath := filepath.Join(dir, filename)
@@ -110,7 +110,6 @@ func makeMidi(f flags) {
 				d.midiData = append(d.midiData, midiModel{Note: uint32(note),
 					Velocity: uint32(random(40, 100)),
 				})
-
 			}
 
 			for _, midi := range d.midiData {
@@ -140,8 +139,10 @@ func findAllowedNotes(f flags) []int32 {
 	var allowedNotes []int32
 	var scale []string
 
-	if f.Scale == "Major" {
+	if f.Scale == "major" {
 		scale = majorScale
+	} else if f.Scale == "minor" {
+		scale = minorScale
 	} else {
 		scale = majorScale
 	}
@@ -165,9 +166,12 @@ func findAllowedNotes(f flags) []int32 {
 		}
 	}
 
-	for i, note := range allowedNotes {
-		for i < 40 {
-			i += 1
+	// Add all octaves of each note
+	// TODO: Fix - sometimeds hangs.
+	var i int
+	for i < 10 {
+		i += 1
+		for _, note := range allowedNotes {
 			allowedNotes = append(allowedNotes, note+12)
 		}
 	}
@@ -177,8 +181,9 @@ func findAllowedNotes(f flags) []int32 {
 	return allowedNotes
 }
 
-var noteNames = []string{"A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"}
-var majorScale = []string{"W", "W", "W", "H", "W", "W", "W", "H"}
+var noteNames = []string{"A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"}
+var majorScale = []string{"W", "W", "H", "W", "W", "W", "H"}
+var minorScale = []string{"W", "H", "W", "W", "H", "W", "W"}
 
 func generateNote(f flags, allowedNotes []int32) int {
 	var noteIsAllowed bool
@@ -186,12 +191,16 @@ func generateNote(f flags, allowedNotes []int32) int {
 	randomEl := random(0, len(allowedNotes)-1)
 	potentialNote := random(f.LowNoteMidi, f.HighNoteMidi)
 
-	for noteIsAllowed == false {
+	for {
 		if potentialNote == int(allowedNotes[randomEl]) {
 			noteIsAllowed = true
 		} else {
 			potentialNote = random(f.LowNoteMidi, f.HighNoteMidi)
 			noteIsAllowed = false
+		}
+
+		if !noteIsAllowed {
+			break
 		}
 	}
 

@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/go-audio/midi"
@@ -47,6 +48,8 @@ func setFlagValues(f flags) flags {
 	if f.TwoOctaveLimit == true {
 		f.HighNoteMidi = f.LowNoteMidi + int(24)
 	}
+
+	f.Scale = strings.ToLower(f.Scale)
 
 	return f
 }
