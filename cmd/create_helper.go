@@ -44,6 +44,24 @@ func midisToNotes(midiIn []int) []string {
 	return notes
 }
 
+func containsString(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
+
+func containsInt32(s []int32, e int) bool {
+	for _, a := range s {
+		if a == int32(e) {
+			return true
+		}
+	}
+	return false
+}
+
 func setFlagValues(f flags) flags {
 	if f.TwoOctaveLimit {
 		f.HighNoteMidi = f.LowNoteMidi + int(24)

@@ -36,7 +36,7 @@ Keys & scales:
 - [ ] `--random` flag, to allow non-scales etc
 
 Error reporting:
-- [ ] When entering an invalid key
+- [X] When entering an invalid key
 - [ ] When entering an invalid scale
 
 Tests:

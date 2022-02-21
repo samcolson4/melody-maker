@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
@@ -32,12 +33,14 @@ var createCmd = &cobra.Command{
 		}
 
 		lowNoteMidi, err := cmd.Flags().GetInt("low-note-midi")
-		if lowNoteMidi != 0 && err == nil {
+		if err == nil {
 			f.LowNoteMidi = lowNoteMidi
 		}
 
 		highNoteMidi, err := cmd.Flags().GetInt("high-note-midi")
-		f.HighNoteMidi = highNoteMidi
+		if err == nil {
+			f.HighNoteMidi = highNoteMidi
+		}
 
 		twoOctaveLimit, err := cmd.Flags().GetBool("two-octave-limit")
 		if err == nil {
@@ -51,7 +54,11 @@ var createCmd = &cobra.Command{
 
 		key, _ := cmd.Flags().GetString("key")
 		if err == nil {
-			f.Key = key
+			if containsString(keys, key) {
+				f.Key = key
+			} else {
+				log.Fatalf("Key '%s' does not exist", key)
+			}
 		}
 
 		scale, _ := cmd.Flags().GetString("scale")
@@ -140,11 +147,11 @@ func findAllowedNotes(f flags) []int32 {
 	var scale []string
 
 	if f.Scale == "major" {
-		scale = majorScale
+		scale = scales[f.Scale]
 	} else if f.Scale == "minor" {
-		scale = minorScale
+		scale = scales[f.Scale]
 	} else {
-		scale = majorScale
+		scale = scales["major"]
 	}
 
 	rootNote := f.Key
@@ -181,26 +188,22 @@ func findAllowedNotes(f flags) []int32 {
 	return allowedNotes
 }
 
-var noteNames = []string{"A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"}
-var majorScale = []string{"W", "W", "H", "W", "W", "W", "H"}
-var minorScale = []string{"W", "H", "W", "W", "H", "W", "W"}
+var keys = []string{"A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"}
+var noteNames = []string{"A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"}
+var scales = map[string][]string{
+	"major": {"W", "W", "W", "H", "W", "W", "W", "H"},
+	"minor": {"W", "H", "W", "W", "H", "W", "W"},
+}
 
 func generateNote(f flags, allowedNotes []int32) int {
-	var noteIsAllowed bool
-
-	randomEl := random(0, len(allowedNotes)-1)
+	var noteAllowed bool
 	potentialNote := random(f.LowNoteMidi, f.HighNoteMidi)
 
-	for {
-		if potentialNote == int(allowedNotes[randomEl]) {
-			noteIsAllowed = true
+	for !noteAllowed {
+		if containsInt32(allowedNotes, potentialNote) {
+			noteAllowed = true
 		} else {
 			potentialNote = random(f.LowNoteMidi, f.HighNoteMidi)
-			noteIsAllowed = false
-		}
-
-		if !noteIsAllowed {
-			break
 		}
 	}
 
