@@ -28,6 +28,25 @@ e.mid: [F2 G2 D3 F2 A#2 C3 G2 G2 C3 F3 G2 F2 F2 F2 A2 D3 A2 D#3 D#2 D2 D2 G2 C3 
 f.mid: [A2 A2 C3 D2 F2 G2 D3 D#2 F3 A#2 D#3 D2 F2 D2 F2 A2 F3 A#2 A#2 D#3]
 ```
 
+### Instruments
+This flag sets the channel value. In Logic Pro, these values dictate what instrument is played with loading in the midi file. The instruments available are:
+- piano
+- synth
+- bass
+- pluck-synth
+- strings
+- session-strings
+- brass
+- trumpet
+- edrums
+- drums
+- organ
+- e-piano
+- synth-strings
+- analog-synth
+- synth-brass
+- sculpture-synth
+
 ## To do
 - [X] Build initial random midi output
 - [X] Expand available scales (minor).
@@ -38,7 +57,7 @@ Flags:
 - [X] Octave range
 - [X] Two octave limit
 - [X] Note length
-- [ ] Velocity range
+- [X] Velocity range
 - [ ] Ascending / descending patterns
 
 Keys & scales:
