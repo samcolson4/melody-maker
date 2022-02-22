@@ -58,6 +58,7 @@ Flags:
 - [X] Two octave limit
 - [X] Note length
 - [X] Velocity range
+- [ ] Range of gap between notes
 - [ ] Ascending / descending patterns
 
 Keys & scales:

@@ -172,23 +172,30 @@ func makeMidi(f flags) {
 			var d midiModels
 			var noteValues []int
 
-			sum := 0
 			for i := 1; i < numberOfNotes; i++ {
-				sum += i
-
 				note := generateNote(f, allowedNotes)
-
 				d.midiData = append(d.midiData, midiModel{Note: uint32(note),
 					Velocity: uint32(random(f.VelocityMin, f.VelocityMax)),
 				})
 			}
 
-			for _, midi := range d.midiData {
-				writer.NoteOn(wr, uint8(midi.Note), uint8(midi.Velocity))
+			forwardOnLastLoop := false
+			for i := 1; i < len(d.midiData); i++ {
+				writer.NoteOn(wr, uint8(d.midiData[i].Note), uint8(d.midiData[i].Velocity))
 				wr.SetDelta(uint32(random(f.MinNoteLength, f.MaxNoteLength)))
-				writer.NoteOff(wr, uint8(midi.Note))
+				writer.NoteOff(wr, uint8(d.midiData[i].Note))
 
-				noteValues = append(noteValues, int(midi.Note))
+				breakEl := random(0, len(breaks)-1)
+				if breaks[breakEl] && !forwardOnLastLoop {
+					// TODO: Add flag to control for gap size.
+					writer.Forward(wr, 0, uint32(random(1, 3)), uint32(random(0, 8)))
+					i -= 1
+					forwardOnLastLoop = true
+				} else {
+					forwardOnLastLoop = false
+				}
+
+				noteValues = append(noteValues, int(d.midiData[i].Note))
 			}
 
 			stringNotes := midisToNotes(noteValues)
@@ -232,8 +239,6 @@ func findAllowedNotes(f flags) []int32 {
 		}
 	}
 
-	// Add all octaves of each note
-	// TODO: Fix - sometimes hangs.
 	var i int
 	for i < 10 {
 		i += 1
@@ -253,6 +258,7 @@ var scales = map[string][]string{
 	"major": {"W", "W", "H", "W", "W", "W", "H"},
 	"minor": {"W", "H", "W", "W", "H", "W", "W"},
 }
+var breaks = []bool{true, true, false, false, false}
 
 func generateNote(f flags, allowedNotes []int32) int {
 	var noteAllowed bool
