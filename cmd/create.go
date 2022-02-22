@@ -21,6 +21,8 @@ type flags struct {
 	MinNotes       int
 	MaxNoteLength  int
 	MinNoteLength  int
+	VelocityMax    int
+	VelocityMin    int
 }
 
 // createCmd represents the create command
@@ -82,6 +84,12 @@ var createCmd = &cobra.Command{
 			f.MaxNoteLength = noteLength[1]
 		}
 
+		velocityRange, err := cmd.Flags().GetIntSlice("velocity-range")
+		if err == nil {
+			f.VelocityMin = velocityRange[0]
+			f.VelocityMax = velocityRange[1]
+		}
+
 		makeMidi(f)
 	},
 }
@@ -98,8 +106,9 @@ func init() {
 	createCmd.PersistentFlags().IntP("file-number", "n", 6, "The number of files to generate. Max 23.")
 	createCmd.PersistentFlags().StringP("key", "k", "C", "The key of the melody.")
 	createCmd.PersistentFlags().StringP("scale", "s", "major", "The scale to use when generating a melody.")
-	createCmd.PersistentFlags().IntSliceP("sequence-length-range", "l", []int{10, 20}, "The minimum and maximum number of notes in a sequence.")
-	createCmd.PersistentFlags().IntSliceP("note-length", "d", []int{300, 500}, "The minimum and maximum length of each note.")
+	createCmd.PersistentFlags().IntSliceP("sequence-length-range", "l", []int{10, 20}, "Min & max number of notes in a sequence.")
+	createCmd.PersistentFlags().IntSliceP("note-length", "d", []int{300, 500}, "Min & max length of each note.")
+	createCmd.PersistentFlags().IntSliceP("velocity-range", "v", []int{15, 110}, "Min & max note velocity.")
 	// TODO Set logic default instrument (0 is piano etc)
 }
 
@@ -131,7 +140,7 @@ func makeMidi(f flags) {
 				note := generateNote(f, allowedNotes)
 
 				d.midiData = append(d.midiData, midiModel{Note: uint32(note),
-					Velocity: uint32(random(40, 100)),
+					Velocity: uint32(random(f.VelocityMin, f.VelocityMax)),
 				})
 			}
 
