@@ -8,15 +8,24 @@ When more features have been added, a binary will be provided as part of a relea
 
 `make buildRunDelete` is a helper used during development to create a binary with the latest local changes, generate output and then delete the binary without the manual steps.
 
-### Example output
+### Example
 ```
-$ melody-maker create
+$ melody-maker create \
+  --note-length=750,1500 \
+  --sequence-length-range=10,30 \
+  --midi-note-range=50,66 \
+  --key G \
+  --scale minor
+```
 
-Written file 'a.mid': [F#5 B4 D#1]
-Written file 'b.mid': [E6 B3 G1 F#4 B4 D#2 A#5 F5 D1]
-Written file 'c.mid': [G1 F#1 F#3 A#1 E4 A3 G3]
-Written file 'd.mid': [C4 G#4 D#4 C3 D4 G#1 G#4 G4 G1 A4]
-Written file 'e.mid': [C#6 C#3 B5 B0 C#6 F2 C3 C1 C1 C4]
+```
+Writing to folder: 'midi'.
+a.mid: [D2 F3 A2 F3 A#2 D#3 A2 D2 A2 C3 F3 G2 C3 F2 G2 F2 D#3 A#2 A2 D#2 C3 F3 G2 F3 F3 A#2 D2 C3]
+b.mid: [G2 G2 C3 F3 D#2 D#2 G2 F2 F2 A#2 D#3 G2]
+c.mid: [D#2 D3 D3 G2 D2 D3 C3 D3 D3 G2 C3 D2 F2 F3 G2 D#2 C3 G2 C3 D#2]
+d.mid: [D#2 D2 A#2 D3 A#2 D#3 F2 C3 F3 C3 A#2 F2 C3 F2 F3 F2 A#2 A#2 F3 D2 D#2 D#3 C3 C3 F3 G2 A2 F2 A2]
+e.mid: [F2 G2 D3 F2 A#2 C3 G2 G2 C3 F3 G2 F2 F2 F2 A2 D3 A2 D#3 D#2 D2 D2 G2 C3 F2]
+f.mid: [A2 A2 C3 D2 F2 G2 D3 D#2 F3 A#2 D#3 D2 F2 D2 F2 A2 F3 A#2 A#2 D#3]
 ```
 
 ## To do
@@ -28,7 +37,9 @@ Flags:
 - [X] Output folder
 - [X] Octave range
 - [X] Two octave limit
+- [X] Note length
 - [ ] Velocity range
+- [ ] Ascending / descending patterns
 
 Keys & scales:
 - [X] Add key selection (so users can generate a melody to go with an existing chord sequence)

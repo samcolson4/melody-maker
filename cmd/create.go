@@ -19,6 +19,8 @@ type flags struct {
 	Scale          string
 	MaxNotes       int
 	MinNotes       int
+	MaxNoteLength  int
+	MinNoteLength  int
 }
 
 // createCmd represents the create command
@@ -34,14 +36,10 @@ var createCmd = &cobra.Command{
 			f.OutputFolder = outputFolder
 		}
 
-		lowNoteMidi, err := cmd.Flags().GetInt("low-note-midi")
+		noteRange, err := cmd.Flags().GetIntSlice("midi-note-range")
 		if err == nil {
-			f.LowNoteMidi = lowNoteMidi
-		}
-
-		highNoteMidi, err := cmd.Flags().GetInt("high-note-midi")
-		if err == nil {
-			f.HighNoteMidi = highNoteMidi
+			f.LowNoteMidi = noteRange[0]
+			f.HighNoteMidi = noteRange[1]
 		}
 
 		twoOctaveLimit, err := cmd.Flags().GetBool("two-octave-limit")
@@ -68,18 +66,20 @@ var createCmd = &cobra.Command{
 			f.Scale = scale
 		}
 
-		maxNotes, _ := cmd.Flags().GetInt("max-notes")
+		sequenceLengthRange, err := cmd.Flags().GetIntSlice("sequence-length-range")
 		if err == nil {
-			f.MaxNotes = maxNotes
-		}
-
-		minNotes, _ := cmd.Flags().GetInt("min-notes")
-		if err == nil {
-			f.MinNotes = minNotes
+			f.MinNotes = sequenceLengthRange[0]
+			f.MaxNotes = sequenceLengthRange[1]
 		}
 
 		if f.MinNotes > f.MaxNotes {
-			log.Fatalf("Minimum notes cannot be larger than maximum notes.")
+			log.Fatalf("Minimum number of notes cannot be larger than the maximum number.")
+		}
+
+		noteLength, err := cmd.Flags().GetIntSlice("note-length")
+		if err == nil {
+			f.MinNoteLength = noteLength[0]
+			f.MaxNoteLength = noteLength[1]
 		}
 
 		makeMidi(f)
@@ -92,17 +92,15 @@ func init() {
 	rootCmd.AddCommand(createCmd)
 
 	// Flags
-	createCmd.PersistentFlags().String("output-folder", "midi", "Folder to output to.")
-	createCmd.PersistentFlags().Int("low-note-midi", 21, "The lowest note of the output, in midi format.")
-	createCmd.PersistentFlags().Int("high-note-midi", 108, "The highest note of the output, in midi format.")
-	createCmd.PersistentFlags().Bool("two-octave-limit", false, "Use with low-note-midi to have a two note melody from a starting point. Overwrites `--high-note-midi`.")
-	createCmd.PersistentFlags().Int("file-number", 6, "The number of files to generate. Max 23.")
-	createCmd.PersistentFlags().String("key", "C", "The key of the melody.")
-	createCmd.PersistentFlags().String("scale", "major", "The scale to use when generating a melody.")
+	createCmd.PersistentFlags().StringP("output-folder", "o", "midi", "Folder to output to.")
+	createCmd.PersistentFlags().IntSliceP("midi-note-range", "r", []int{21, 108}, "The lowest & highest midi notes that could be included.")
+	createCmd.PersistentFlags().Bool("two-octave-limit", false, "Use with low-note-midi to have a two note melody from a starting point.")
+	createCmd.PersistentFlags().IntP("file-number", "n", 6, "The number of files to generate. Max 23.")
+	createCmd.PersistentFlags().StringP("key", "k", "C", "The key of the melody.")
+	createCmd.PersistentFlags().StringP("scale", "s", "major", "The scale to use when generating a melody.")
+	createCmd.PersistentFlags().IntSliceP("sequence-length-range", "l", []int{10, 20}, "The minimum and maximum number of notes in a sequence.")
+	createCmd.PersistentFlags().IntSliceP("note-length", "d", []int{300, 500}, "The minimum and maximum length of each note.")
 	// TODO Set logic default instrument (0 is piano etc)
-
-	createCmd.PersistentFlags().Int("max-notes", 10, "The maximum number of notes in a sequence.")
-	createCmd.PersistentFlags().Int("min-notes", 4, "The minimum number of notes in a sequence.")
 }
 
 func makeMidi(f flags) {
@@ -139,7 +137,7 @@ func makeMidi(f flags) {
 
 			for _, midi := range d.midiData {
 				writer.NoteOn(wr, uint8(midi.Note), uint8(midi.Velocity))
-				wr.SetDelta(uint32(random(300, 1500)))
+				wr.SetDelta(uint32(random(f.MinNoteLength, f.MaxNoteLength)))
 				writer.NoteOff(wr, uint8(midi.Note))
 
 				noteValues = append(noteValues, int(midi.Note))
