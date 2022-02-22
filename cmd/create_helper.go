@@ -83,3 +83,17 @@ func removeDuplicateInt(intSlice []int32) []int32 {
 	}
 	return list
 }
+
+func setScale(f flags) []string {
+	var scale []string
+
+	if f.Scale == "major" {
+		scale = scales[f.Scale]
+	} else if f.Scale == "minor" {
+		scale = scales[f.Scale]
+	} else {
+		scale = scales["major"]
+	}
+
+	return scale
+}

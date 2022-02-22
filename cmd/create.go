@@ -17,6 +17,8 @@ type flags struct {
 	FileNumber     int
 	Key            string
 	Scale          string
+	MaxNotes       int
+	MinNotes       int
 }
 
 // createCmd represents the create command
@@ -66,6 +68,20 @@ var createCmd = &cobra.Command{
 			f.Scale = scale
 		}
 
+		maxNotes, _ := cmd.Flags().GetInt("max-notes")
+		if err == nil {
+			f.MaxNotes = maxNotes
+		}
+
+		minNotes, _ := cmd.Flags().GetInt("min-notes")
+		if err == nil {
+			f.MinNotes = minNotes
+		}
+
+		if f.MinNotes > f.MaxNotes {
+			log.Fatalf("Minimum notes cannot be larger than maximum notes.")
+		}
+
 		makeMidi(f)
 	},
 }
@@ -83,8 +99,10 @@ func init() {
 	createCmd.PersistentFlags().Int("file-number", 6, "The number of files to generate. Max 23.")
 	createCmd.PersistentFlags().String("key", "C", "The key of the melody.")
 	createCmd.PersistentFlags().String("scale", "major", "The scale to use when generating a melody.")
-	// TODO Set channel
-	// TODO # notes in sequence
+	// TODO Set logic default instrument (0 is piano etc)
+
+	createCmd.PersistentFlags().Int("max-notes", 10, "The maximum number of notes in a sequence.")
+	createCmd.PersistentFlags().Int("min-notes", 4, "The minimum number of notes in a sequence.")
 }
 
 func makeMidi(f flags) {
@@ -102,9 +120,9 @@ func makeMidi(f flags) {
 		outputPath := filepath.Join(dir, filename)
 
 		err := writer.WriteSMF(outputPath, 2, func(wr *writer.SMF) error {
-			wr.SetChannel(1) // sets the channel for the next messages
+			wr.SetChannel(0)
 
-			numberOfNotes := random(3, 15)
+			numberOfNotes := random(f.MinNotes+1, f.MaxNotes+1)
 			var d midiModels
 			var noteValues []int
 
@@ -144,18 +162,10 @@ func makeMidi(f flags) {
 
 func findAllowedNotes(f flags) []int32 {
 	var allowedNotes []int32
-	var scale []string
-
-	if f.Scale == "major" {
-		scale = scales[f.Scale]
-	} else if f.Scale == "minor" {
-		scale = scales[f.Scale]
-	} else {
-		scale = scales["major"]
-	}
-
-	rootNote := f.Key
 	var rootNoteMidi int
+
+	scale := setScale(f)
+	rootNote := f.Key
 
 	for i, note := range noteNames {
 		if note == rootNote {
@@ -177,7 +187,7 @@ func findAllowedNotes(f flags) []int32 {
 	}
 
 	// Add all octaves of each note
-	// TODO: Fix - sometimeds hangs.
+	// TODO: Fix - sometimes hangs.
 	var i int
 	for i < 10 {
 		i += 1

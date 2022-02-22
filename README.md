@@ -21,7 +21,7 @@ Written file 'e.mid': [C#6 C#3 B5 B0 C#6 F2 C3 C1 C1 C4]
 
 ## To do
 - [X] Build initial random midi output
-- [ ] Expand available scales (minor).
+- [X] Expand available scales (minor).
 - [ ] Add `save` command to move specified files to a different folder, avoiding overwriting.
 
 Flags:
