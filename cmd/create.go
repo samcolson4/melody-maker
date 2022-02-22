@@ -163,8 +163,11 @@ func findAllowedNotes(f flags) []int32 {
 		}
 	}
 
+	// Add a skip value to the start of the scale before iterating
+	scale = append([]string{"skip"}, scale...)
+
 	for i, step := range scale {
-		if i == 0 {
+		if i == 0 && step == "skip" {
 			allowedNotes = append(allowedNotes, int32(rootNoteMidi))
 		} else if i != 0 && step == "W" {
 			allowedNotes = append(allowedNotes, allowedNotes[len(allowedNotes)-1]+2)
@@ -191,7 +194,7 @@ func findAllowedNotes(f flags) []int32 {
 var keys = []string{"A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"}
 var noteNames = []string{"A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"}
 var scales = map[string][]string{
-	"major": {"W", "W", "W", "H", "W", "W", "W", "H"},
+	"major": {"W", "W", "H", "W", "W", "W", "H"},
 	"minor": {"W", "H", "W", "W", "H", "W", "W"},
 }
 
