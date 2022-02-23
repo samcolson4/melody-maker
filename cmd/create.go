@@ -2,29 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"gitlab.com/gomidi/midi/writer"
 )
-
-type flags struct {
-	OutputFolder   string
-	LowNoteMidi    int
-	HighNoteMidi   int
-	TwoOctaveLimit bool
-	FileNumber     int
-	Key            string
-	Scale          string
-	MaxNotes       int
-	MinNotes       int
-	MaxNoteLength  int
-	MinNoteLength  int
-	VelocityMax    int
-	VelocityMin    int
-	Instrument     int
-}
 
 // createCmd represents the create command
 var createCmd = &cobra.Command{
@@ -32,108 +14,22 @@ var createCmd = &cobra.Command{
 	Short: "Create a new melody.",
 	Long:  "Generates a series of midi outputs and writes them to a file.",
 	Run: func(cmd *cobra.Command, args []string) {
-		var f flags
-
-		outputFolder, _ := cmd.Flags().GetString("output-folder")
-		if outputFolder != "" {
-			f.OutputFolder = outputFolder
-		}
-
-		noteRange, err := cmd.Flags().GetIntSlice("midi-note-range")
-		if err == nil {
-			f.LowNoteMidi = noteRange[0]
-			f.HighNoteMidi = noteRange[1]
-		}
-
-		twoOctaveLimit, err := cmd.Flags().GetBool("two-octave-limit")
-		if err == nil {
-			f.TwoOctaveLimit = twoOctaveLimit
-		}
-
-		fileNumber, err := cmd.Flags().GetInt("file-number")
-		if err == nil {
-			f.FileNumber = fileNumber
-		}
-
-		key, _ := cmd.Flags().GetString("key")
-		if err == nil {
-			if containsString(keys, key) {
-				f.Key = key
-			} else {
-				log.Fatalf("Key '%s' does not exist", key)
-			}
-		}
-
-		scale, _ := cmd.Flags().GetString("scale")
-		if err == nil {
-			f.Scale = scale
-		}
-
-		sequenceLengthRange, err := cmd.Flags().GetIntSlice("sequence-length-range")
-		if err == nil {
-			f.MinNotes = sequenceLengthRange[0]
-			f.MaxNotes = sequenceLengthRange[1]
-		}
-
-		if f.MinNotes > f.MaxNotes {
-			log.Fatalf("Minimum number of notes cannot be larger than the maximum number.")
-		}
-
-		noteLength, err := cmd.Flags().GetIntSlice("note-length")
-		if err == nil {
-			f.MinNoteLength = noteLength[0]
-			f.MaxNoteLength = noteLength[1]
-		}
-
-		velocityRange, err := cmd.Flags().GetIntSlice("velocity-range")
-		if err == nil {
-			f.VelocityMin = velocityRange[0]
-			f.VelocityMax = velocityRange[1]
-		}
-
-		instrument, err := cmd.Flags().GetString("instrument")
-		if err == nil {
-			switch instrument {
-			case "piano":
-				f.Instrument = 0
-			case "synth":
-				f.Instrument = 1
-			case "bass":
-				f.Instrument = 2
-			case "pluck-synth":
-				f.Instrument = 3
-			case "strings":
-				f.Instrument = 4
-			case "session-strings":
-				f.Instrument = 5
-			case "brass":
-				f.Instrument = 6
-			case "trumpet":
-				f.Instrument = 7
-			case "edrums":
-				f.Instrument = 8
-			case "drums":
-				f.Instrument = 9
-			case "organ":
-				f.Instrument = 10
-			case "e-piano":
-				f.Instrument = 11
-			case "synth-strings":
-				f.Instrument = 12
-			case "analog-synth":
-				f.Instrument = 13
-			case "synth-brass":
-				f.Instrument = 14
-			case "sculpture-synth":
-				f.Instrument = 15
-			}
-		}
-
+		f := assignFlags(cmd, flags{})
 		makeMidi(f)
 	},
 }
 
+// TODO: Change to imported list of random words
 var fileNames = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "y", "x", "z"}
+
+// TODO: Put vars into struct?
+var keys = []string{"A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"}
+var noteNames = []string{"A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"}
+var scales = map[string][]string{
+	"major": {"W", "W", "H", "W", "W", "W", "H"},
+	"minor": {"W", "H", "W", "W", "H", "W", "W"},
+}
+var breaks = []bool{true, true, false, false, false}
 
 func init() {
 	rootCmd.AddCommand(createCmd)
@@ -149,6 +45,9 @@ func init() {
 	createCmd.PersistentFlags().IntSliceP("note-length", "d", []int{300, 500}, "Min & max length of each note.")
 	createCmd.PersistentFlags().IntSliceP("velocity-range", "v", []int{15, 110}, "Min & max note velocity.")
 	createCmd.PersistentFlags().StringP("instrument", "i", "piano", "See docs for full list.")
+	createCmd.PersistentFlags().IntSlice("gap-bars-range", []int{0, 0}, "Min & max gap between notes (bars).")
+	createCmd.PersistentFlags().IntSlice("gap-num-range", []int{0, 2}, "Min & max gap between notes (num of denoms).")
+	createCmd.PersistentFlags().IntSlice("gap-denom-range", []int{0, 8}, "Min & max gap between notes (denoms).")
 }
 
 func makeMidi(f flags) {
@@ -168,7 +67,7 @@ func makeMidi(f flags) {
 		err := writer.WriteSMF(outputPath, 2, func(wr *writer.SMF) error {
 			wr.SetChannel(uint8(f.Instrument))
 
-			numberOfNotes := random(f.MinNotes+1, f.MaxNotes+1)
+			numberOfNotes := random(f.NoteNumberRange[0]+1, f.NoteNumberRange[1]+1)
 			var d midiModels
 			var noteValues []int
 
@@ -187,8 +86,7 @@ func makeMidi(f flags) {
 
 				breakEl := random(0, len(breaks)-1)
 				if breaks[breakEl] && !forwardOnLastLoop {
-					// TODO: Add flag to control for gap size.
-					writer.Forward(wr, 0, uint32(random(1, 3)), uint32(random(0, 8)))
+					writer.Forward(wr, uint32(random(f.GapBarsRange[0], f.GapBarsRange[1])), uint32(random(f.GapNumRange[0], f.GapNumRange[1])), uint32(random(f.GapDenomRange[0], f.GapDenomRange[1])))
 					i -= 1
 					forwardOnLastLoop = true
 				} else {
@@ -252,23 +150,15 @@ func findAllowedNotes(f flags) []int32 {
 	return allowedNotes
 }
 
-var keys = []string{"A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"}
-var noteNames = []string{"A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"}
-var scales = map[string][]string{
-	"major": {"W", "W", "H", "W", "W", "W", "H"},
-	"minor": {"W", "H", "W", "W", "H", "W", "W"},
-}
-var breaks = []bool{true, true, false, false, false}
-
 func generateNote(f flags, allowedNotes []int32) int {
 	var noteAllowed bool
-	potentialNote := random(f.LowNoteMidi, f.HighNoteMidi)
+	potentialNote := random(f.NoteRange[0], f.NoteRange[1])
 
 	for !noteAllowed {
 		if containsInt32(allowedNotes, potentialNote) {
 			noteAllowed = true
 		} else {
-			potentialNote = random(f.LowNoteMidi, f.HighNoteMidi)
+			potentialNote = random(f.NoteRange[0], f.NoteRange[1])
 		}
 	}
 
