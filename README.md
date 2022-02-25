@@ -8,24 +8,51 @@ When more features have been added, a binary will be provided as part of a relea
 
 `make buildRunDelete` is a helper used during development to create a binary with the latest local changes, generate output and then delete the binary without the manual steps.
 
-### Example
+### Example configurations
+Short notes, set to a synth when imported directly to Logic Pro, with minimal breaks between notes.
+
+```
+$ melody-maker create \
+  --note-length=200,300 \
+  --sequence-length-range=10,30 \
+  --midi-note-range=50,66 \
+  --key G \
+  --scale minor \
+  --velocity-range 55,95 \
+  --instrument analog-synth
+```
+
+Medium-length notes, soft key presses.
 ```
 $ melody-maker create \
   --note-length=750,1500 \
   --sequence-length-range=10,30 \
   --midi-note-range=50,66 \
   --key G \
-  --scale minor
+  --scale minor \
+  --velocity-range 35,75
 ```
 
+Longer notes, with significant rests in between, defaulting to the key of C Major.
 ```
-Writing to folder: 'midi'.
-a.mid: [D2 F3 A2 F3 A#2 D#3 A2 D2 A2 C3 F3 G2 C3 F2 G2 F2 D#3 A#2 A2 D#2 C3 F3 G2 F3 F3 A#2 D2 C3]
-b.mid: [G2 G2 C3 F3 D#2 D#2 G2 F2 F2 A#2 D#3 G2]
-c.mid: [D#2 D3 D3 G2 D2 D3 C3 D3 D3 G2 C3 D2 F2 F3 G2 D#2 C3 G2 C3 D#2]
-d.mid: [D#2 D2 A#2 D3 A#2 D#3 F2 C3 F3 C3 A#2 F2 C3 F2 F3 F2 A#2 A#2 F3 D2 D#2 D#3 C3 C3 F3 G2 A2 F2 A2]
-e.mid: [F2 G2 D3 F2 A#2 C3 G2 G2 C3 F3 G2 F2 F2 F2 A2 D3 A2 D#3 D#2 D2 D2 G2 C3 F2]
-f.mid: [A2 A2 C3 D2 F2 G2 D3 D#2 F3 A#2 D#3 D2 F2 D2 F2 A2 F3 A#2 A#2 D#3]
+$ melody-maker create \
+  --note-length=2500,3500 \
+  --sequence-length-range=10,30 \
+  --midi-note-range=50,66 \
+  --velocity-range 50,100 \
+  --gap-denom-range 0,5 \
+  --gap-num-range 0,1
+```
+
+One-note rhythmic output. Useful for drum adornments.
+```
+melody-maker create \
+  --note-length=80,130 \
+  --sequence-length-range=80,80 \
+  --midi-note-range=50,50 \
+  --velocity-range 35,75 \
+  --gap-denom-range 5,8 \
+  --gap-num-range 0,1
 ```
 
 ### Rest configuration
