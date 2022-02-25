@@ -84,7 +84,7 @@ This flag sets the channel value. In Logic Pro, these values dictate what instru
 - synth-brass
 - sculpture-synth
 
-## To do
+## To do / features
 - [X] Build initial random midi output
 - [X] Expand available scales (minor).
 - [ ] Add `save` command to move specified files to a different folder, avoiding overwriting.
@@ -98,9 +98,10 @@ Flags:
 - [X] Range of gap between notes
 - [ ] Ascending / descending patterns
 
-Keys & scales:
+Keys, scales & modes:
 - [X] Add key selection (so users can generate a melody to go with an existing chord sequence)
 - [X] Add scale selection
+- [ ] Add modes.
 - [ ] `--random` flag, to allow non-scales etc
 
 Error reporting:
