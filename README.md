@@ -28,6 +28,16 @@ e.mid: [F2 G2 D3 F2 A#2 C3 G2 G2 C3 F3 G2 F2 F2 F2 A2 D3 A2 D#3 D#2 D2 D2 G2 C3 
 f.mid: [A2 A2 C3 D2 F2 G2 D3 D#2 F3 A#2 D#3 D2 F2 D2 F2 A2 F3 A#2 A#2 D#3]
 ```
 
+### Rest configuration
+The spaces between notes played, rests, can be configured through flags:
+
+| Flag                | Example               | Description                                                                                                                                                                                                                  |
+|---------------------|-----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--gap-bars-range`  | --gap-bars-range 0,4  | Sets the min & max distance (in bars) between each note in the sequence. This example could result in rests 4 bars long.                                                                                                     |
+| `--gap-denom-range` | --gap-denom-range 0,8 | Sets the min & max fraction of a note to be rested for.  In this example, the rests could be between a 0th and an 8th of a note.  N.B - Setting this also requires the `--gap-num-range` flag to be set to come into effect. |
+| `--gap-num-range`   | --gap-num-range 1,5   | Sets the min & max number of note denoms to use as a rest. In this example, each note in the sequence will have an at least 1 denom rest after it.                                                                           |
+
+
 ### Instruments
 This flag sets the channel value. In Logic Pro, these values dictate what instrument is played with loading in the midi file. The instruments available are:
 - piano
@@ -58,7 +68,7 @@ Flags:
 - [X] Two octave limit
 - [X] Note length
 - [X] Velocity range
-- [ ] Range of gap between notes
+- [X] Range of gap between notes
 - [ ] Ascending / descending patterns
 
 Keys & scales:
