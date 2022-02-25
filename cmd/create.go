@@ -87,7 +87,6 @@ func makeMidi(f flags) {
 				breakEl := random(0, len(breaks)-1)
 				if breaks[breakEl] && !forwardOnLastLoop {
 					writer.Forward(wr, uint32(random(f.GapBarsRange[0], f.GapBarsRange[1])), uint32(random(f.GapNumRange[0], f.GapNumRange[1])), uint32(random(f.GapDenomRange[0], f.GapDenomRange[1])))
-					i -= 1
 					forwardOnLastLoop = true
 				} else {
 					forwardOnLastLoop = false

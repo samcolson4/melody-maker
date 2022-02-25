@@ -112,6 +112,7 @@ func setScale(f flags) []string {
 	} else if f.Scale == "minor" {
 		scale = scales[f.Scale]
 	} else {
+		fmt.Println("Defaulting to major scale. Check input if this was not intended.\n")
 		scale = scales["major"]
 	}
 
