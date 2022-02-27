@@ -106,7 +106,8 @@ Keys, scales & modes:
 
 Error reporting:
 - [X] When entering an invalid key
-- [ ] When entering an invalid scale
+- [X] When entering an invalid scale
 
 Tests:
-- [ ] Add some...
+- [X] Basic bash tests to check build compilation.
+- [ ] Go testing for the library.
