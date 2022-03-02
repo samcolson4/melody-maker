@@ -96,7 +96,8 @@ Flags:
 - [X] Note length
 - [X] Velocity range
 - [X] Range of gap between notes
-- [ ] Ascending / descending patterns
+- [X] Ascending & descending patterns
+- [X] Note interval range
 
 Keys, scales & modes:
 - [X] Add key selection (so users can generate a melody to go with an existing chord sequence)
