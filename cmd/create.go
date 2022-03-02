@@ -44,10 +44,13 @@ func init() {
 	createCmd.PersistentFlags().IntSliceP("sequence-length-range", "l", []int{10, 20}, "Min & max number of notes in a sequence.")
 	createCmd.PersistentFlags().IntSliceP("note-length", "d", []int{300, 500}, "Min & max length of each note.")
 	createCmd.PersistentFlags().IntSliceP("velocity-range", "v", []int{15, 110}, "Min & max note velocity.")
-	createCmd.PersistentFlags().StringP("instrument", "i", "piano", "See docs for full list.")
+	createCmd.PersistentFlags().String("instrument", "piano", "See docs for full list.")
 	createCmd.PersistentFlags().IntSlice("gap-bars-range", []int{0, 0}, "Min & max gap between notes (bars).")
 	createCmd.PersistentFlags().IntSlice("gap-num-range", []int{0, 2}, "Min & max gap between notes (num of denoms).")
 	createCmd.PersistentFlags().IntSlice("gap-denom-range", []int{0, 8}, "Min & max gap between notes (denoms).")
+	createCmd.PersistentFlags().Bool("ascending", false, "Produce ascending note melodies.")
+	createCmd.PersistentFlags().Bool("descending", false, "Produce descending note melodies.")
+	createCmd.PersistentFlags().IntSliceP("interval", "i", []int{-1, 128}, "Min & max interval between notes.")
 }
 
 func makeMidi(f flags) {
@@ -72,7 +75,7 @@ func makeMidi(f flags) {
 			var noteValues []int
 
 			for i := 1; i < numberOfNotes; i++ {
-				note := generateNote(f, allowedNotes)
+				note := generateNote(f, allowedNotes, d)
 				d.midiData = append(d.midiData, midiModel{Note: uint32(note),
 					Velocity: uint32(random(f.VelocityMin, f.VelocityMax)),
 				})
@@ -149,17 +152,79 @@ func findAllowedNotes(f flags) []int32 {
 	return allowedNotes
 }
 
-func generateNote(f flags, allowedNotes []int32) int {
+func newNoteFromAllowed(f flags, allowedNotes []int32) int {
 	var noteAllowed bool
-	potentialNote := random(f.NoteRange[0], f.NoteRange[1])
+	note := random(f.NoteRange[0], f.NoteRange[1])
 
 	for !noteAllowed {
-		if containsInt32(allowedNotes, potentialNote) {
+		if containsInt32(allowedNotes, note) {
 			noteAllowed = true
 		} else {
-			potentialNote = random(f.NoteRange[0], f.NoteRange[1])
+			note = random(f.NoteRange[0], f.NoteRange[1])
 		}
 	}
 
-	return potentialNote
+	return note
+}
+
+func generateNote(f flags, allowedNotes []int32, d midiModels) int {
+	note := newNoteFromAllowed(f, allowedNotes)
+	var previousNote int
+
+	if len(d.midiData) > 0 {
+		previousNote = int(d.midiData[len(d.midiData)-1].Note)
+	}
+
+	var intervalCheck bool
+	var ascendingCheck bool
+	var descendingCheck bool
+
+	for !intervalCheck && !ascendingCheck && !descendingCheck {
+
+		if f.IntervalRange[0] >= 0 && f.IntervalRange[1] <= 127 {
+			interval := random(f.IntervalRange[0], f.IntervalRange[1])
+
+			okToContinue := false
+			for !okToContinue && len(d.midiData) != 0 {
+				if note-previousNote > interval || previousNote-note > interval {
+					note = newNoteFromAllowed(f, allowedNotes)
+				} else {
+					okToContinue = true
+					intervalCheck = true
+				}
+			}
+		} else {
+			intervalCheck = true
+		}
+
+		if f.Ascending {
+			okToContinue := false
+			for !okToContinue && len(d.midiData) != 0 {
+				if note <= previousNote {
+					note = newNoteFromAllowed(f, allowedNotes)
+				} else {
+					okToContinue = true
+					ascendingCheck = true
+				}
+			}
+		} else {
+			ascendingCheck = true
+		}
+
+		if f.Descending {
+			okToContinue := false
+			for !okToContinue && len(d.midiData) != 0 {
+				if note >= previousNote {
+					note = newNoteFromAllowed(f, allowedNotes)
+				} else {
+					okToContinue = true
+					descendingCheck = true
+				}
+			}
+		} else {
+			descendingCheck = true
+		}
+	}
+
+	return note
 }

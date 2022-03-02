@@ -22,6 +22,9 @@ type flags struct {
 	GapBarsRange    []int
 	GapNumRange     []int
 	GapDenomRange   []int
+	Ascending       bool
+	Descending      bool
+	IntervalRange   []int
 }
 
 func assignFlags(cmd *cobra.Command, f flags) flags {
@@ -38,6 +41,25 @@ func assignFlags(cmd *cobra.Command, f flags) flags {
 	twoOctaveLimit, err := cmd.Flags().GetBool("two-octave-limit")
 	if err == nil {
 		f.TwoOctaveLimit = twoOctaveLimit
+	}
+
+	ascending, err := cmd.Flags().GetBool("ascending")
+	if err == nil {
+		f.Ascending = ascending
+	}
+
+	descending, err := cmd.Flags().GetBool("descending")
+	if err == nil {
+		f.Descending = descending
+	}
+
+	if f.Ascending && f.Descending {
+		log.Fatalf("Cannot set both ascending and descending flags at the same time.")
+	}
+
+	intervalRange, err := cmd.Flags().GetIntSlice("interval")
+	if err == nil {
+		f.IntervalRange = intervalRange
 	}
 
 	fileNumber, err := cmd.Flags().GetInt("file-number")
