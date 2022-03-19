@@ -87,6 +87,7 @@ This flag sets the channel value. In Logic Pro, these values dictate what instru
 ## To do / features
 - [X] Build initial random midi output
 - [X] Expand available scales (minor).
+- [ ] Generate midi based on name input
 - [ ] Add `save` command to move specified files to a different folder, avoiding overwriting.
 
 Flags:
